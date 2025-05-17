@@ -9,8 +9,27 @@ services:
       - "4318:4318" # OTLP HTTP receiver
     depends_on:
       - jaeger
+      - tempo
+      - grafana
 
   jaeger:
     image: jaegertracing/all-in-one:1.56
     ports:
       - "16686:16686" # Jaeger UI
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000" # Grafana UI
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - tempo
+    volumes:
+      - ./grafana-provisioning/datasources:/etc/grafana/provisioning/datasources
